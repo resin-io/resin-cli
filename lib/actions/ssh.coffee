@@ -18,15 +18,15 @@ commandOptions = require('./command-options')
 { normalizeUuidProp } = require('../utils/normalization')
 
 module.exports =
-	signature: 'ssh [uuid]'
-	description: '(beta) get a shell into the running app container of a device'
+	signature: 'ssh [uuid] [command]'
+	description: '(beta) get a shell into the host OS or running app container of a device'
 	help: '''
 		Warning: 'balena ssh' requires an openssh-compatible client to be correctly
 		installed in your shell environment. For more information (including Windows
 		support) please check the README here: https://github.com/balena-io/balena-cli
 
 		Use this command to get a shell into the running application container of
-		your device.
+		your device, and you can also run commands in the host OS
 
 		Examples:
 
@@ -35,6 +35,7 @@ module.exports =
 			$ balena ssh 7cf02a6 --port 8080
 			$ balena ssh 7cf02a6 -v
 			$ balena ssh 7cf02a6 -s
+			$ balena ssh 7cf02a6 'date' -s
 	'''
 	permission: 'user'
 	primary: true
@@ -122,20 +123,30 @@ module.exports =
 				throw new Error('Did not find running application container') if not containerId?
 				Promise.try ->
 					sshProxyCommand = getSshProxyCommand(hasTunnelBin)
+					sshCommand = ''
 
+					console
 					if options.host
 						accessCommand = "host #{uuid}"
+						if params.command
+							# Quote the command so it doesn't get broken up by the SSH connection
+							sshCommand = "'#{params.command}'"
 					else
 						accessCommand = "enter #{uuid} #{containerId}"
+
 
 					command = "ssh #{verbose} -t \
 						-o LogLevel=ERROR \
 						-o StrictHostKeyChecking=no \
 						-o UserKnownHostsFile=/dev/null \
 						#{sshProxyCommand} \
-						-p #{options.port} #{username}@ssh.#{proxyUrl} #{accessCommand}"
+						-p #{options.port} #{username}@ssh.#{proxyUrl} #{accessCommand} \
+						#{sshCommand}"
 
 					subShellCommand = getSubShellCommand(command)
 					child_process.spawn subShellCommand.program, subShellCommand.args,
 						stdio: 'inherit'
+					.on 'exit', (code) ->
+						if code isnt 0
+							process.exit code
 		.nodeify(done)

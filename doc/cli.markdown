@@ -154,7 +154,7 @@ environment variable (in the same standard URL format).
 
 - SSH
 
-	- [ssh [uuid]](#ssh-uuid)
+	- [ssh [uuid] [command]](#ssh-uuid-command)
 
 - Notes
 
@@ -959,14 +959,14 @@ increase verbosity
 
 # SSH
 
-## ssh [uuid]
+## ssh [uuid] [command]
 
 Warning: 'balena ssh' requires an openssh-compatible client to be correctly
 installed in your shell environment. For more information (including Windows
 support) please check the README here: https://github.com/balena-io/balena-cli
 
 Use this command to get a shell into the running application container of
-your device.
+your device, and you can also run commands in the host OS
 
 Examples:
 
@@ -975,6 +975,7 @@ Examples:
 	$ balena ssh 7cf02a6 --port 8080
 	$ balena ssh 7cf02a6 -v
 	$ balena ssh 7cf02a6 -s
+	$ balena ssh 7cf02a6 'date' -s
 
 ### Options
 
