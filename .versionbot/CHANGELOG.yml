@@ -1,4 +1,19 @@
 - commits:
+    - subject: 'docker: Install official static docker binaries'
+      hash: 93f7ddb3ef87e7b39dce4c01884bd0af3242d0dd
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Changelog-entry: 'docker: Install official static docker binaries'
+        changelog-entry: 'docker: Install official static docker binaries'
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 12.43.3
+  date: 2021-03-29T17:05:51.473Z
+- commits:
     - subject: 'docker: Improve handling of Docker-in-Docker errors'
       hash: 9036ce9af373eb8d328f105839163db0cae38ae6
       body: >
