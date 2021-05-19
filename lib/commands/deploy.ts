@@ -374,6 +374,7 @@ ${dockerignoreHelp}
 					`Bearer ${auth}`,
 					apiEndpoint,
 					!opts.shouldUploadLogs,
+					composeOpts.projectPath,
 				);
 			}
 

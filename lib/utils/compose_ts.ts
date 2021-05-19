@@ -43,6 +43,7 @@ import {
 import type { DeviceInfo } from './device/api';
 import { getBalenaSdk, getChalk, stripIndent } from './lazy';
 import Logger = require('./logger');
+import jsyaml = require('js-yaml');
 
 /**
  * Given an array representing the raw `--release-tag` flag of the deploy and
@@ -1303,6 +1304,7 @@ export async function deployProject(
 	auth: string,
 	apiEndpoint: string,
 	skipLogUpload: boolean,
+	projectPath: string,
 ): Promise<import('balena-release/build/models').ReleaseModel> {
 	const releaseMod = await import('balena-release');
 	const { createRelease, tagServiceImages } = await import('./compose');
@@ -1312,14 +1314,17 @@ export async function deployProject(
 	const spinner = createSpinner();
 	let runloop = runSpinner(tty, spinner, `${prefix}Creating release...`);
 
+	let contract;
 	let $release: Release;
 	try {
+		contract = await getContractContent(`${projectPath}/balena.yml`);
 		$release = await createRelease(
 			apiEndpoint,
 			auth,
 			userId,
 			appId,
 			composition,
+			contract?.version,
 		);
 	} finally {
 		runloop.end();
@@ -1356,6 +1361,12 @@ export async function deployProject(
 		}
 	} finally {
 		runloop = runSpinner(tty, spinner, `${prefix}Saving release...`);
+
+		// Add contract contents to the release
+		if (contract) {
+			release.contract = JSON.stringify(contract);
+		}
+
 		release.end_timestamp = new Date();
 		if (release.id != null) {
 			try {
@@ -1403,6 +1414,35 @@ export function createRunLoop(tick: (...args: any[]) => void) {
 		},
 	};
 	return runloop;
+}
+
+async function getContractContent(filePath: string): Promise<any | undefined> {
+	let fileContentAsString;
+	try {
+		fileContentAsString = await fs.readFile(filePath, 'utf8');
+	} catch {
+		// File does not exist. Return undefined
+		return;
+	}
+
+	let asJson;
+	try {
+		asJson = jsyaml.load(fileContentAsString) as any;
+	} catch (err) {
+		throw new ExpectedError(
+			`Error parsing file "${filePath}":\n ${err.message}`,
+		);
+	}
+
+	const allowedContractTypes = ['sw.application', 'sw.block'];
+	if (!asJson?.type || !allowedContractTypes.includes(asJson.type)) {
+		throw new ExpectedError(
+			stripIndent`Error: application contract in '${filePath}' needs to
+				define a top level "type" field with an allowed application type.
+				Allowed application types are: ${allowedContractTypes.join(', ')}`,
+		);
+	}
+	return asJson;
 }
 
 function createLogStream(input: Readable) {
