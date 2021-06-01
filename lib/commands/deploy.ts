@@ -58,6 +58,7 @@ interface FlagsDef extends ComposeCliFlags, DockerCliFlags {
 	build: boolean;
 	nologupload: boolean;
 	'release-tag'?: string[];
+	draft: boolean;
 	help: void;
 }
 
@@ -138,6 +139,14 @@ ${dockerignoreHelp}
 				Hint: Empty values may be specified with "" (bash, cmd.exe) or '""' (PowerShell).
 			`,
 			multiple: true,
+		}),
+		draft: flags.boolean({
+			description: stripIndent`
+				Deploy the release as a draft. Draft releases are ignored
+				by the 'track latest' release policy but can be used through release pinning.
+				Draft releases can be marked as final through the API. Releases as created
+				as final by default unless this option is given.`,
+			default: false,
 		}),
 		...composeCliFlags,
 		...dockerCliFlags,
@@ -220,6 +229,7 @@ ${dockerignoreHelp}
 			shouldPerformBuild: !!options.build,
 			shouldUploadLogs: !options.nologupload,
 			buildEmulated: !!options.emulated,
+			createAsDraft: options.draft,
 			buildOpts,
 		});
 		await applyReleaseTagKeysAndValues(
@@ -243,6 +253,7 @@ ${dockerignoreHelp}
 			shouldUploadLogs: boolean;
 			buildEmulated: boolean;
 			buildOpts: any; // arguments to forward to docker build command
+			createAsDraft: boolean;
 		},
 	) {
 		const _ = await import('lodash');
@@ -375,6 +386,7 @@ ${dockerignoreHelp}
 					apiEndpoint,
 					!opts.shouldUploadLogs,
 					composeOpts.projectPath,
+					opts.createAsDraft,
 				);
 			}
 
