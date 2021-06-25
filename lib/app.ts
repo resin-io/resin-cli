@@ -97,6 +97,13 @@ async function oclifRun(
 	command: string[],
 	options: import('./preparser').AppOptions,
 ) {
+	const { DeprecationChecker } = await import('./deprecation');
+	const deprecationChecker = new DeprecationChecker(packageJSON.version);
+	// checkDeprecated uses locally cached data only
+	await deprecationChecker.checkDeprecated();
+	// checkForNewReleases may query the npm registry
+	const deprecationPromise = deprecationChecker.checkForNewReleases();
+
 	const runPromise = (async function (shouldFlush: boolean) {
 		const { CustomMain } = await import('./utils/oclif-utils');
 		let isEEXIT = false;
@@ -130,7 +137,8 @@ async function oclifRun(
 	})(!options.noFlush);
 
 	const { trackPromise } = await import('./hooks/prerun/track');
-	await Promise.all([trackPromise, runPromise]);
+
+	await Promise.all([trackPromise, deprecationPromise, runPromise]);
 }
 
 /** CLI entrypoint. Called by the `bin/balena` and `bin/balena-dev` scripts. */

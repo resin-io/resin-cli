@@ -160,10 +160,14 @@ following major version is released. For example, balena CLI v10.17.5, as the
 latest v10 release, would remain compatible with the balenaCloud backend for one
 year from the date when v11.0.0 is released.
 
-At the end of this period, the older major version is considered deprecated and
-some of the functionality that depends on balenaCloud services may stop working
-at any time.
-Users are encouraged to regularly update the balena CLI to the latest version.
+Half way through to that period (6 months after the release of the next major
+version), old major versions of the balena CLI will start printing a deprecation
+warning message (subject to the terminal being detected as an interactive tty).
+At the end of that period, older major versions will abort with an error message
+unless the `--unsupported` flag is used. Whether or not the `--unsupported` flag
+is used, the balenaCloud backend may be updated in a way that is no longer
+compatible with the older major versions. Users are thus encouraged to regularly
+update the balena CLI to the latest version.
 
 ## Contributing (including editing documentation files)
 
