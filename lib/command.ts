@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-import Command from '@oclif/command';
+import { Command } from '@oclif/command';
 import { InsufficientPrivilegesError } from './errors';
+import * as output from './framework/output';
 
 export default abstract class BalenaCommand extends Command {
 	/**
@@ -129,4 +130,7 @@ export default abstract class BalenaCommand extends Command {
 			await this.getStdin();
 		}
 	}
+
+	protected outputMessage = output.outputMessage;
+	protected outputData = output.outputData;
 }

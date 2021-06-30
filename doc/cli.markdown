@@ -163,7 +163,7 @@ Users are encouraged to regularly update the balena CLI to the latest version.
 - Application
 
 	- [apps](#apps)
-	- [app &#60;nameorslug&#62;](#app-nameorslug)
+	- [app &#60;application&#62;](#app-application)
 	- [app create &#60;name&#62;](#app-create-name)
 	- [app purge &#60;application&#62;](#app-purge-application)
 	- [app rename &#60;application&#62; [newname]](#app-rename-application-newname)
@@ -327,7 +327,7 @@ Examples:
 
 No-op since release v12.0.0
 
-## app &#60;nameOrSlug&#62;
+## app &#60;application&#62;
 
 Display detailed information about a single balena application.
 

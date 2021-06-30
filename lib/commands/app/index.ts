@@ -22,8 +22,10 @@ import * as ca from '../../utils/common-args';
 import { getBalenaSdk, getVisuals, stripIndent } from '../../utils/lazy';
 import { applicationIdInfo } from '../../utils/messages';
 import type { Release } from 'balena-sdk';
+import { isV13 } from '../../utils/version';
+import type { DataOutputOptions } from '../../framework';
 
-interface FlagsDef {
+interface FlagsDef extends DataOutputOptions {
 	help: void;
 }
 
@@ -43,17 +45,20 @@ export default class AppCmd extends Command {
 
 	public static args = [ca.applicationRequired];
 
-	public static usage = 'app <nameOrSlug>';
+	public static usage = 'app <application>';
 
 	public static flags: flags.Input<FlagsDef> = {
 		help: cf.help,
+		...(isV13() ? cf.dataOutputFlags : {}),
 	};
 
 	public static authenticated = true;
 	public static primary = true;
 
 	public async run() {
-		const { args: params } = this.parse<FlagsDef, ArgsDef>(AppCmd);
+		const { args: params, flags: options } = this.parse<FlagsDef, ArgsDef>(
+			AppCmd,
+		);
 
 		const { getApplication } = await import('../../utils/sdk');
 
@@ -76,15 +81,23 @@ export default class AppCmd extends Command {
 		application.device_type = application.is_for__device_type[0].slug;
 		application.commit = application.should_be_running__release[0]?.commit;
 
-		// Emulate table.vertical title output, but avoid uppercasing and inserting spaces
-		console.log(`== ${application.app_name}`);
-		console.log(
-			getVisuals().table.vertical(application, [
-				'id',
-				'device_type',
-				'slug',
-				'commit',
-			]),
-		);
+		if (isV13()) {
+			await this.outputData(
+				application,
+				['app_name', 'id', 'device_type', 'slug', 'commit'],
+				options,
+			);
+		} else {
+			// Emulate table.vertical title output, but avoid uppercasing and inserting spaces
+			console.log(`== ${application.app_name}`);
+			console.log(
+				getVisuals().table.vertical(application, [
+					'id',
+					'device_type',
+					'slug',
+					'commit',
+				]),
+			);
+		}
 	}
 }
